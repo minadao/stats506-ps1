@@ -1,0 +1,355 @@
+---
+title: "STATS 506 - Problem set 1"
+author: "Mina Dao"
+format: html
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loading Packages
+
+```{r, warning = FALSE, message = FALSE}
+library(dplyr)
+library(ggplot2)
+library(GGally)
+```
+
+## Problem 1: Abalone Data
+
+#### a. Import the data and name the columns
+
+```{r}
+abalone <- read.csv(file = "abalone.data")
+
+colnames(abalone) <- c("sex", "length", "diameter", "height", "wholeWeight",
+                       "shuckledWeight", "visceraWeight", "shellsWeight", 
+                       "rings")
+head(abalone)
+```
+
+#### b. Three different sexes of abalone: Male, Female and Infants
+
+```{r}
+# count the number of observations belonging to each sex
+obsBySex <- abalone %>% group_by(sex) %>% count()
+obsBySex
+```
+
+There are $1307$ female observations, $1342$ infant observations, and
+$1527$ male observations.
+
+#### c. Answer the following questions
+
+1.  
+
+```{r, message = FALSE, warning = FALSE, results = 'hide'}
+# pair plots of different type of weights versus rings
+ggpairs(abalone %>% dplyr::select(wholeWeight, shuckledWeight, visceraWeight,
+                                  shellsWeight, rings))
+```
+
+The final column represents the correlation between each type of weight
+with `rings`. According to the data, `shellsWeight` has the highest
+correlation with `rings`, at about $0.628$.
+
+In part 7, line 106 of the `abalone.name` file, we can see that
+`shellsWeight` has the highest correlation with `rings`, at about
+$0.628$.
+
+2.  
+
+```{r}
+# find the correlation between shells weight and rings for each sex
+corrShellsBySex <- abalone %>%
+  group_by(sex) %>%
+  summarise(corrShellsBySex = cor(shellsWeight, rings))
+corrShellsBySex
+```
+
+By the table above, Infant has the highest correlation.
+
+3.  
+
+```{r}
+# find the row with the highest rings
+maxWeights <- abalone %>% slice_max(rings)
+maxWeights
+```
+
+For the abalone with the most rings,
+
+-   whole weight is $1.8075$
+-   shuckled weight is $0.7055$
+-   viscera weight is $0.3215$
+-   shells weight is $0.475$
+
+4.  
+
+```{r}
+# filter from the data frame and count the number of abalones which have a viscera weight larger than their shell weight
+x <- nrow(filter(abalone, visceraWeight > shellsWeight))
+
+# total observations
+obs <- dim(abalone)[1]
+
+# compute the percentage
+x/obs * 100
+```
+
+The percentage of abalones have a viscera weight larger than their shell
+weight is $6.513\%$.
+
+## d. Create table
+
+```{r}
+# find the correlation of each weight with rings, and group by sex
+abalone %>%
+  group_by(sex) %>%
+  summarise(whole = cor(wholeWeight, rings),
+            shuckled = cor(shuckledWeight, rings),
+            viscera = cor(visceraWeight, rings),
+            shells = cor(shellsWeight, rings))
+```
+
+#### e. t-test
+
+Let $\mu_M$ be the mean number of rings across male abalones, $\mu_F$ be
+the mean number of rings across female abalones, $\mu_I$ be the mean
+number of rings across infant abalones.
+
+We are going to carry out 3 t-tests.
+
+Between Female and Male, the null and alternative hypothesis for the
+test are:
+
+$H_0$: $\mu_F - \mu_M = 0$ 
+
+$H_a$: $\mu_F - \mu_M \neq 0$
+
+Between Female and Infant, the null and alternative hypothesis for the
+test are:
+
+$H_0$: $\mu_F - \mu_I = 0$ 
+
+$H_a$: $\mu_F - \mu_I \neq 0$
+
+Between Infant and Male, the null and alternative hypothesis for the
+test are:
+
+$H_0$: $\mu_I - \mu_M = 0$ 
+
+$H_a$: $\mu_I - \mu_M \neq 0$
+
+
+```{r}
+# Female vs Male
+t.test(rings ~ sex, data = subset(abalone, sex %in% c("F", "M")))
+
+# Female vs Infant
+t.test(rings ~ sex, data = subset(abalone, sex %in% c("F", "I")))
+
+# Infant vs Male 
+t.test(rings ~ sex, data = subset(abalone, sex %in% c("I", "M")))
+```
+
+Between Female and Male abalones, t_stat $= 3.69$ and p_value
+$= 0.0002 < 0.001$, so there is very strong evidence against the null
+hypothesis. We support that the true mean difference between male and
+female abalones is not equal to 0.
+
+Between Female and Infant abalones, t_stat $= 29.477$ and p_value \$ =
+2.2 \times 10\^{-16} \< 0.001\$, so there is very strong evidence
+against the null hypothesis. We support that the true mean difference
+between female and infant abalones is not equal to 0.
+
+Between Infant and Male abalones, t_stat $= -27.194$ and p_value
+$= 2.2 \times 10^{-16} < 0.001$, so there is very strong evidence
+against the null hypothesis. We support that the true mean difference
+between male and infant abalones is not equal to 0.
+
+## Problem 2: Food Expenditure Data
+
+#### a. Import the data
+
+```{r}
+food <- read.csv("food_expenditure.csv")
+head(food)
+```
+
+#### b. Clean up the variable names
+
+```{r}
+colnames(food) <- c("ID", "age", "householdCount", "state", "currency", 
+                    "totalExpd", "groceryExpd", "dineOutExpd", "selfExpd", 
+                    "timesDineOut", "includeAlcohol", "foodAssist")
+head(food)
+```
+
+#### c. Restrict the data to those paying in USD
+
+```{r}
+# total number of observations
+nrow(food)
+
+# restrict to those paying in USD
+foodUSD <- filter(food, currency == "USD")
+nrow(foodUSD) # number of observations paying in USD
+```
+
+We saw that the total number of observations before restricting is 262, and the total after restricting is 230.
+
+Eliminating rows from the extracting data with reasonable rules:
+
+#### d. The variable related to age
+
+I want to exclude all minors under the age of 18 since they usually are not responsible for food expenditures in the house.
+```{r}
+# filter the rows where age is greater or equal to 18
+foodAge <- filter(foodUSD, age >= 18)
+head(foodAge)
+```
+
+#### e. The variable related to state
+
+I will exclude answers which are not actually an abbreviation of a state in the US. R has a built-in data set `state.abb` representing the abbreviation of 50 US states. I filter the rows where the answer is in the data set above.
+
+```{r}
+foodState <- filter(foodAge, state %in% state.abb)
+head(foodState)
+```
+
+#### f. The four variables related to food expenditures
+
+Some people did not know the total expenditures, groceries, dining out, or their own expenditures, so these are recorded as `NA` or blank. There are also negative answers and approximation (~). I will keep only nonnegative numeric values. I will omit all the fields with `NA`, negative, or approximation.
+
+```{r}
+# keep nonnegative fields
+foodExpd <- filter(foodAge, (totalExpd >= 0) & (groceryExpd >= 0) 
+                   & (dineOutExpd >= 0) & (selfExpd >= 0), na.rm = TRUE)
+head(foodExpd)
+```
+
+#### g. The variable related to number of times dining out
+
+People with a healthy lifestyle usually have 3 meals a day, so the maximum reasonable number of dine-out meals a week should be 21. I will omit rows where the number is greater than 21.
+
+```{r}
+foodNumDineOut <- filter(foodExpd, !timesDineOut > 21)
+head(foodNumDineOut)
+```
+
+#### h. The final number of observations after cleaning
+
+```{r}
+nrow(foodNumDineOut)
+```
+
+
+
+## Problem 3: Collatz conjecture
+
+#### a. 
+
+```{r}
+#' Title
+#'
+#' @param n a positive integer
+#' @returns `x` the next input in the Collatz sequence 
+
+nextCollatz <- function(n) {
+  # if n is not positive or n is not an integer
+  if ((!n > 0) || (round(n) != n)) {
+    print("n must be positive")
+    return(-1)
+  }
+  
+  # if n is 1
+  if (n == 1) {
+    print("there is no next input")
+    return(-1)
+  }
+  
+  # if n is even
+  if (n %% 2 == 0) {
+    x <- n / 2
+  } else {
+    x <- 3 * n + 1
+  }
+  return(x)
+}
+
+nextCollatz(5)
+nextCollatz(16)
+nextCollatz(1)
+```
+#### b.
+
+```{r}
+#' Title
+#'
+#' @param n a positive integer
+#' @returns `output` list containing final Collatz sequence and its length
+collatzSequence <- function(n){
+  # if n is not positive or n is not an integer
+  if ((!n > 0) || (round(n) != n)) {
+    print("n must be positive")
+    return(-1)
+  }
+  
+  # append n as the first entry of the sequence
+  seq <- n
+  # while n is not 1
+  while (n != 1) {
+    # find the next input 
+    n <- nextCollatz(n)
+    # add the input to the sequence
+    seq <- c(seq, n)
+    # store output as a list containing the sequence and its length
+    output <- list(seq, length(seq))
+    names(output) <- c("sequence", "length")
+  }
+  return(output)
+}
+collatzSequence(5)
+collatzSequence(19)
+```
+#### c. Find the shortest and longest Collatz sequence starting with values between 100 and 500, inclusive.
+
+```{r}
+# store the length of the Collatz sequence starting with 100
+# convert the list (length) into a double
+shortLen <- as.numeric(unlist(collatzSequence(100)[2]))
+shortInd <- 100
+longLen <- as.numeric(unlist(collatzSequence(100)[2]))
+longInd <- 100
+
+# from sequence starting with values from 101 to 500
+for (i in 101:500) {
+  len <- as.numeric(unlist(collatzSequence(i)[2]))
+  # if the length of sequence starting with i is less than `shortLen`
+  if (len < shortLen) {
+    shortLen <- len
+    shortInd <- i
+  # else if the length of sequence starting with i is less than `longLen`
+  } else if (len > longLen) {
+    longLen <- len
+    longInd <- i
+  # do not need to check case of ties since we only update the index if the 
+  # length of the next sequence is not equal to the current stored length
+  }  
+}
+
+# The length of the shortest sequence and its first value
+c(shortLen, shortInd)
+# The length of the longest sequence and its first value
+c(longLen, longInd)
+```
+
+
+
+
