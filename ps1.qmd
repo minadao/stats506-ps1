@@ -40,7 +40,7 @@ obsBySex <- abalone %>% group_by(sex) %>% count()
 obsBySex
 ```
 
-There are $1307$ female observations, $1342$ infant observations, and
+There are $1307$ female observations, $1342$ infant observations, and 
 $1527$ male observations.
 
 #### c. Answer the following questions
@@ -71,7 +71,8 @@ corrShellsBySex <- abalone %>%
 corrShellsBySex
 ```
 
-By the table above, Infant has the highest correlation.
+By the table above, Infant has the highest correlation between shells weight and
+rings at $0.725$.
 
 3.  
 
@@ -91,7 +92,8 @@ For the abalone with the most rings,
 4.  
 
 ```{r}
-# filter from the data frame and count the number of abalones which have a viscera weight larger than their shell weight
+# filter from the data frame and count the number of abalones which have a 
+# viscera weight larger than their shell weight
 x <- nrow(filter(abalone, visceraWeight > shellsWeight))
 
 # total observations
@@ -149,23 +151,26 @@ $H_a$: $\mu_I - \mu_M \neq 0$
 ```{r}
 # Female vs Male
 t.test(rings ~ sex, data = subset(abalone, sex %in% c("F", "M")))
-
-# Female vs Infant
-t.test(rings ~ sex, data = subset(abalone, sex %in% c("F", "I")))
-
-# Infant vs Male 
-t.test(rings ~ sex, data = subset(abalone, sex %in% c("I", "M")))
 ```
 
 Between Female and Male abalones, t_stat $= 3.69$ and p_value
 $= 0.0002 < 0.001$, so there is very strong evidence against the null
 hypothesis. We support that the true mean difference between male and
 female abalones is not equal to 0.
+```{r}
+# Female vs Infant
+t.test(rings ~ sex, data = subset(abalone, sex %in% c("F", "I")))
+```
 
 Between Female and Infant abalones, t_stat $= 29.477$ and p_value \$ =
 2.2 \times 10\^{-16} \< 0.001\$, so there is very strong evidence
 against the null hypothesis. We support that the true mean difference
 between female and infant abalones is not equal to 0.
+
+```{r}
+# Infant vs Male 
+t.test(rings ~ sex, data = subset(abalone, sex %in% c("I", "M")))
+```
 
 Between Infant and Male abalones, t_stat $= -27.194$ and p_value
 $= 2.2 \times 10^{-16} < 0.001$, so there is very strong evidence
@@ -201,13 +206,15 @@ foodUSD <- filter(food, currency == "USD")
 nrow(foodUSD) # number of observations paying in USD
 ```
 
-We saw that the total number of observations before restricting is 262, and the total after restricting is 230.
+We saw that the total number of observations before restricting is 262, and the 
+total after restricting is 230.
 
 Eliminating rows from the extracting data with reasonable rules:
 
 #### d. The variable related to age
 
-I want to exclude all minors under the age of 18 since they usually are not responsible for food expenditures in the house.
+I want to exclude all minors under the age of 18 since they usually are not 
+responsible for food expenditures in the house.
 ```{r}
 # filter the rows where age is greater or equal to 18
 foodAge <- filter(foodUSD, age >= 18)
@@ -229,7 +236,7 @@ Some people did not know the total expenditures, groceries, dining out, or their
 
 ```{r}
 # keep nonnegative fields
-foodExpd <- filter(foodAge, (totalExpd >= 0) & (groceryExpd >= 0) 
+foodExpd <- filter(foodState, (totalExpd >= 0) & (groceryExpd >= 0) 
                    & (dineOutExpd >= 0) & (selfExpd >= 0), na.rm = TRUE)
 head(foodExpd)
 ```
@@ -249,7 +256,7 @@ head(foodNumDineOut)
 nrow(foodNumDineOut)
 ```
 
-
+The final number of observations after cleaning is $121$ observations. We eliminated $230 - 121 = 109$ observations.
 
 ## Problem 3: Collatz conjecture
 
@@ -283,9 +290,9 @@ nextCollatz <- function(n) {
   return(x)
 }
 
+# e.g.,
 nextCollatz(5)
 nextCollatz(16)
-nextCollatz(1)
 ```
 #### b.
 
@@ -315,6 +322,8 @@ collatzSequence <- function(n){
   }
   return(output)
 }
+
+# e.g.,
 collatzSequence(5)
 collatzSequence(19)
 ```
