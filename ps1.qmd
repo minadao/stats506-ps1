@@ -263,7 +263,7 @@ The final number of observations after cleaning is $121$ observations. We elimin
 #### a. 
 
 ```{r}
-#' Title
+#' Function to identify the next input in the Collatz sequence
 #'
 #' @param n a positive integer
 #' @returns `x` the next input in the Collatz sequence 
@@ -297,7 +297,7 @@ nextCollatz(16)
 #### b.
 
 ```{r}
-#' Title
+#' Function to find the Collatz sequence and its length
 #'
 #' @param n a positive integer
 #' @returns `output` list containing final Collatz sequence and its length
